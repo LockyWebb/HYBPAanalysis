@@ -1,0 +1,446 @@
+---
+title: "HYBPA? Analysis"
+author: "Lachlan Webb"
+date: "03/05/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+library(stringr)
+library(tibble)
+
+theme_set(theme_bw())
+
+setwd("C:/Users/Lachlan/Documents/HYBPA/")
+hybpa <- read_excel("data_from_wikipedia.xlsx", sheet = 1)
+hybpa %<>% drop_na()
+write.csv(hybpa, "HYBPA_wiki_data.csv", row.names = FALSE)
+
+# Winners
+Winners <- hybpa %>% group_by(winner) %>% summarise(Wins = n())
+
+# Appearances
+Appearances <- hybpa %>% 
+  separate(guests, into = paste("contestant",1:5,sep=""), sep = ",") %>% 
+  pivot_longer(contestant1:contestant5, names_to = "con_num", values_to = "Name") %>%
+  mutate(Contestant_Name = str_trim(Name)) %>%
+  group_by(Contestant_Name) %>% 
+  summarise(Appearances = n())
+
+# Performance of all who appeared
+Performance <- Appearances %>% merge(Winners, by.x = "Contestant_Name", by.y = "winner", all = TRUE)
+
+Performance %<>% mutate(Winning_rate = Wins/Appearances)
+
+## Scoring
+# this first scoring is:
+# calculate mean strike rate of all five contestants for each episode
+# then average those means across a winners winning episodes
+aggscore <- hybpa %>% 
+  separate(guests, into = paste("contestant",1:5,sep=""), sep = ",") %>% 
+  pivot_longer(contestant1:contestant5, names_to = "con_num", values_to = "Name") %>%
+  mutate(Contestant_Name = str_trim(Name)) %>% select(-Name) %>%
+  merge(Performance, by = "Contestant_Name") %>% #select(-c(Appearances,Wins,Contestant_Name, con_num)) %>%
+  group_by(`No. overall`) %>%
+  summarise(sum_score = sum(Winning_rate, na.rm = TRUE),
+            prod_score = prod(Winning_rate, na.rm = TRUE),
+            mean_score = sum(Winning_rate, na.rm = TRUE)/5)
+
+aggscore %<>% merge(hybpa %>% select(Season,`No. overall`,winner), by = "No. overall")
+
+Scoring <- aggscore %>% group_by(winner) %>%
+  summarise(overallscore = mean(mean_score), minscore = min(mean_score), maxscore = max(mean_score)) %>% 
+  arrange(-overallscore)
+
+## more scoring
+# 
+aggscore4 <- hybpa %>% 
+  separate(guests, into = paste("contestant",1:5,sep=""), sep = ",") %>% 
+  pivot_longer(contestant1:contestant5, names_to = "con_num", values_to = "Name") %>%
+  mutate(Contestant_Name = str_trim(Name)) %>% select(-Name) %>%
+  merge(Performance, by = "Contestant_Name") %>% #select(-c(Appearances,Wins,Contestant_Name, con_num)) %>%
+  filter(Contestant_Name != winner) %>%
+  group_by(`No. overall`) %>%
+  summarise(sum_score = sum(Winning_rate, na.rm = TRUE),
+            prod_score = prod(Winning_rate, na.rm = TRUE),
+            mean_score = sum(Winning_rate, na.rm = TRUE)/4)
+
+aggscore4 %<>% merge(hybpa %>% select(Season,`No. overall`,winner), by = "No. overall")
+
+Scoring_v2 <- aggscore4 %>% group_by(winner) %>%
+  summarise(overallscore = mean(mean_score), minscore = min(mean_score), maxscore = max(mean_score), sumscore = sum(mean_score)) %>% 
+  arrange(-overallscore) %>% merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>%
+  mutate(final_score = sumscore/Appearances) %>%
+  arrange(-final_score)
+
+## appearance number
+
+max_appear_num <- hybpa %>% 
+  separate(guests, into = paste("contestant",1:5,sep=""), sep = ",") %>% 
+  pivot_longer(contestant1:contestant5, names_to = "con_num", values_to = "Name") %>%
+  mutate(Contestant_Name = str_trim(Name)) %>%
+  arrange(`No. overall`, con_num) %>%
+  group_by(Contestant_Name) %>%
+  mutate(appearance_num = 1:n()) %$%
+  table(appearance_num) %>%
+  as.data.frame() %>%
+  filter(Freq >= 10) %>%
+  summarise(max = max(as.numeric(appearance_num)))
+
+
+win_appearance_number <- hybpa %>% 
+  separate(guests, into = paste("contestant",1:5,sep=""), sep = ",") %>% 
+  pivot_longer(contestant1:contestant5, names_to = "con_num", values_to = "Name") %>%
+  mutate(Contestant_Name = str_trim(Name)) %>%
+  arrange(`No. overall`, con_num) %>%
+  group_by(Contestant_Name) %>%
+  mutate(appearance_num = 1:n()) %>%
+  ungroup() %>% group_by(appearance_num) %>%
+  summarise(appearance_strike = sum(winner == Contestant_Name), num_appearance_num = n())
+
+win_appearance_number %<>% mutate(strike_rate = appearance_strike/num_appearance_num)
+
+## get win rate over time
+
+win_rate_time <- Winners %>% mutate(Wins = as.numeric(Wins)) %>% pivot_wider(names_from = winner, values_from = Wins) %>% mutate(Ep = 0)
+
+for (ep in 1:max(hybpa$`No. overall`)) {
+  win_rate_time %<>% add_row()
+  win_rate_time$Ep[ep+1] <- ep
+  for (winner in Winners$winner) {
+    win_rate_time[ep+1,colnames(win_rate_time) == winner] <- sum(grepl(winner, hybpa$winner[hybpa$`No. overall`<=ep]))/sum(grepl(winner, hybpa$guests[hybpa$`No. overall`<=ep]))
+    #if(is.nan(sum(grepl(winner, hybpa$winner[hybpa$`No. overall`<=ep]))/sum(grepl(winner, hybpa$guests[hybpa$`No. overall`<=ep])))) { 
+    #  win_rate_time[ep+1,colnames(win_rate_time) == winner] <- 0
+    #}
+  }
+}
+
+win_rate_time_plot <- win_rate_time %>% filter(Ep > 0) %>%
+  pivot_longer(cols = -Ep, names_to = "Winner", values_to = "Win Rate") %>%
+  merge(Winners, by.x = "Winner", by.y = "winner") %>%
+  mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+"))))
+
+
+```
+
+## HYBPA
+
+The show Have You Been Paying Attention? (HYBPA?) is a hilarious Australian panel game television show. It mixes comedy with weekly news, and is sometimes my only source of news for the week. Host Tom Gleisner quizzes five guests each week, with Ed Kavalee and Sam Pang being two permanent panelists of that five. 
+
+Being a fan for a long time, I am quite used to seeing Ed win the competition each week, and Sam coming last. This is mainly due to Ed focusing on answering the questions correctly, and Sam focusing on jokes and making fun of host Tom. 
+
+I was curious if Ed really was the best performing  panelist, so I pulled the winner from each episode from the episode list on Wikipedia https://en.wikipedia.org/wiki/List_of_Have_You_Been_Paying_Attention%3F_episodes 
+
+## Number of Wins and Number of Performances
+
+So firstly, how often have the panelists appeared?
+
+```{r, echo=FALSE}
+Performance %>% mutate(Appearances_cat = cut(Appearances, 
+                                             breaks = c(0,5,10,20,40,60,100,250), 
+                                             right = TRUE, 
+                                             labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  ggplot(aes(x = reorder(Contestant_Name, - Appearances), y = Appearances, fill = Appearances_cat)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(expand = c(0,0)) + 
+  labs(fill = "Appearances", x = "Panelist") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 6)) 
+```
+
+Ed and Sam unsurprisingly have the most appearances, with Celia Pecquola coming in a distant third. 
+
+The next obvious question is, of those who have won, who has the most wins?
+
+```{r, echo=FALSE}
+Performance %>% 
+  filter(!is.na(Wins)) %>%
+  mutate(Wins_cat = cut(Wins, 
+                        breaks = c(0,5,10,15,20,250), 
+                        right = TRUE, 
+                        labels = c("1-5","6-10","11-15","16-20","21+"))) %>% 
+  ggplot(aes(x = reorder(Contestant_Name, - Wins), y = Wins, fill = Wins_cat)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(expand = c(0,0)) + 
+  labs(fill = "Wins", x = "Panelist") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) 
+```
+
+So Ed has the most wins. Not surprising, given his permanent panelist status and his eagerness to win. 
+
+But details such as this 1) aren't that interesting, 2) are easily calculated, and 3) can even be found on the Wikipedia page. Let's dive a little deeper. 
+
+
+## Strike Rate
+
+So Ed has the most wins, but also the most appearances. Maybe we should take both of these things into account.  Let's define a panelist's 'Strike Rate' as their wins per appearance. 
+
+```{r, echo=FALSE}
+
+Performance %>% mutate(Appearances_cat = cut(Appearances, 
+                                             breaks = c(0,5,10,20,40,60,100,250), 
+                                             right = TRUE, 
+                                             labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  drop_na() %>%
+  ggplot(aes(x = reorder(Contestant_Name, - Winning_rate), y = Winning_rate, fill = Appearances_cat)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(expand = c(0,0)) + 
+  labs(y = "Strike Rate", x = "Panelist", fill = "Appearances") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) 
+
+```
+
+Ed isn't the front runner anymore. Now we have Harry Shearer up the front with a perfect Strike Rate, closely followed by Amanda Keller at 93% and Michala Banas at 83%.
+At the other end, with Strike Rates close to 0 we have Mick Malloy with a strike Rate of 2.5%, the hilarious Kitty Flanagen at 5.7%, and our favourite panelist who hates every segment Sam Peng with 5.8%. 
+Ed has disappeared close to the middle with a Strike Rate of 35%. 
+
+## How have panelists gone over time?
+
+We should also look at how the panelists have progressed over time. A panelists' Strike Rate can only be 0 or 1 after one appearance, and with more appearances we can get a more accurate of idea of how often they win.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, comment="", results=FALSE}
+
+print(ggarrange(
+  win_rate_time_plot %>% filter(`Total Wins` == "1") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "1 Win") + 
+    theme_bw() 
+  ,
+  win_rate_time_plot %>% filter(`Total Wins` == "2-3") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "2-3 Wins") + 
+    theme_bw() 
+  ,
+  win_rate_time_plot %>% filter(`Total Wins` == "4-6") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "4-6 Wins") + 
+    theme_bw() 
+  ,
+  win_rate_time_plot %>% filter(`Total Wins` == "7-10") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "7-10 Wins") + 
+    theme_bw() 
+  ,
+  win_rate_time_plot %>% filter(`Total Wins` == "11-15") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "11-15 Wins") + 
+    theme_bw() 
+  ,
+  win_rate_time_plot %>% filter(`Total Wins` == "70+") %>%
+    ggplot(aes(x = Ep, y = `Win Rate`, group = Winner, colour = Winner)) + 
+    geom_line() + 
+    labs(x = "Episode", title = "70+ Wins") + 
+    theme_bw() 
+  ,
+  ncol = 2
+)) 
+
+```
+
+We can see that Ed has been sitting pretty consistently around 30-35% for a while. Amanda has been doing nothing but increase her Strike Rate for ages after a couple of early losses.
+
+
+
+
+## Adjusted Strike Rate
+
+Now, comparing Strike Rate maybe isn't a perfect comparison. I mean, the ability for a panelist to win is not just how much they have been paying attention that week, but also how much the other panelists have been paying attention. So maybe when we try and figure out how often a panelist wins, we should consider who they are beating. 
+
+
+Let's define a panelists Adjusted Strike Rate as the sum of the Strike Rates of the panelists they beat divided by their number of appearances. That way, if a panelist beats opposing panelists who have high Strike Rates, that win will contribute more to the Aggregated Strike Rate.
+
+For example, Maelanie Bracewell has won twice and has a Strike Rate of 6.9% (due to her 29 appearances). In the Adjusted Strike Rate, instead of 2/29, we add up the Strike Rate of the eight panelists (two lots of four) and divide that by 29. The panelists Melanie beat were Ed Kavalee (35%, twice), Ash London (50%), Marty Sheargold (29%), Sam Pang (5.8%, twice), Tim McDonald (8.3%), and Kitty Flanagan (5.7%). So Melanie's Adjusted Strike Rate $= (0.35 \times 2 + 0.5 + 0.29 + 0.058 \times 2 + 0.083 + 0.057)/2 \approx 0.015$  
+
+```{r, echo=FALSE}
+
+Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
+  mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  ggplot(aes(x = reorder(winner, -final_score), y = final_score, fill = Appearances_cat)) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(name = "Adjusted Strike Rate", expand = c(0,0)) + 
+  scale_x_discrete(name = "Winning Panelist") + 
+  labs(fill = "Appearances") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+```
+
+Some things have changed, but some things haven't. Harry Shearer still has the best Adjusted Strike Rate, with Amanda Keller not far behind. Michala Banas is now 4th, Neroli Meadows taking third. Mick Malloy is still bringing up the rear with Kitty Flanagan keeping him company, However Sam has jumped up a spot with Lehmo dropping a number of positions. 
+
+Let's look at all the changes in position (rank)
+
+```{r, echo=FALSE, warning = FALSE, message=FALSE}
+
+# just doing ranking in each scoring system
+# Scoring_v2 %>% 
+#   mutate(Appearances_cat = cut(Appearances, 
+#                                breaks = c(0,5,10,20,40,60,100,250), 
+#                                right = TRUE, 
+#                                labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+#   arrange(Winning_rate) %>%
+#   mutate(rank_SR = (1:dim(.)[1])) %>%
+#   arrange(final_score) %>%
+#   mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+#   pivot_longer(cols = c(rank_adjustedSR, rank_SR), names_to = "Rank_Type", values_to = "Rank") %>%
+#   mutate(Rank_Type = recode_factor(Rank_Type, rank_SR = "Strike Rate", rank_adjustedSR = "Adjusted Strike Rate")) %>%
+#   ggplot(aes(x = Rank_Type, y = Rank, group = winner, colour = Appearances_cat)) + 
+#   geom_point() + 
+#   geom_line() + 
+#   #geom_text(aes(label = winner), show.legend = FALSE) + 
+#   geom_text(data = . %>% filter(Rank_Type == "Strike Rate"),aes(label = winner), nudge_x = -0.3, show.legend = FALSE) +
+#   geom_text(data = . %>% filter(Rank_Type == "Adjusted Strike Rate"),aes(label = winner), nudge_x = 0.3, show.legend = FALSE) +
+#   scale_y_continuous(name = "Rank", breaks = NULL) + 
+#   scale_x_discrete(name = "Scoring Mathod") + 
+#   labs(colour = "Appearances")
+# 
+# Scoring_v2 %>% 
+#   mutate(Appearances_cat = cut(Appearances, 
+#                                breaks = c(0,5,10,20,40,60,100,250), 
+#                                right = TRUE, 
+#                                labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+#   arrange(Winning_rate) %>%
+#   mutate(rank_SR = (1:dim(.)[1])) %>%
+#   arrange(final_score) %>%
+#   mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+#   mutate(rank_change = rank_adjustedSR-rank_SR) %>% 
+#   ggplot(aes(x = 1, y = rank_change)) + 
+#   geom_boxplot(fill = NA) + 
+#   geom_jitter(aes(colour = Appearances_cat), height = 0) + 
+#   geom_text(data = . %>% filter(rank_change >= 5),aes(x = 1, y = rank_change, label = winner, colour = Appearances_cat), position = position_jitter(height = 0, width = 2), show.legend = FALSE)  +
+#   scale_y_continuous(name = "Change in Rank") + 
+#   scale_x_discrete(name = "") + 
+#   labs(colour = "Appearances", title = "Distribution of Change in Rank", subtitle = "Most Improved Panelsit's Name Included")
+
+
+ggarrange(
+  Scoring_v2 %>% 
+  mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  arrange(Winning_rate) %>%
+  mutate(rank_SR = (1:dim(.)[1])) %>%
+  arrange(final_score) %>%
+  mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+  pivot_longer(cols = c(rank_adjustedSR, rank_SR), names_to = "Rank_Type", values_to = "Rank") %>%
+  mutate(Rank_Type = recode_factor(Rank_Type, rank_SR = "Strike Rate", rank_adjustedSR = "Adjusted Strike Rate")) %>%
+  ggplot(aes(x = Rank_Type, y = Rank, group = winner, colour = Appearances_cat)) + 
+  geom_point() + 
+  geom_line() + 
+  #geom_text(aes(label = winner), show.legend = FALSE) + 
+  geom_text(data = . %>% filter(Rank_Type == "Strike Rate"),aes(label = winner), nudge_x = -0.3, show.legend = FALSE, size = 1.8) +
+  geom_text(data = . %>% filter(Rank_Type == "Adjusted Strike Rate"),aes(label = winner), nudge_x = 0.3, show.legend = FALSE, size = 1.8) +
+  scale_y_continuous(name = "Rank", breaks = NULL) + 
+  scale_x_discrete(name = "Scoring Mathod") + 
+  labs(colour = "Appearances", title = "Change of Rank")
+  ,
+  ggarrange(
+    Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
+  mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  arrange(Winning_rate) %>%
+  mutate(rank_SR = (1:dim(.)[1])) %>%
+  arrange(final_score) %>%
+  mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+  mutate(rank_change = rank_adjustedSR-rank_SR) %>% 
+  ggplot(aes(x = 1, y = rank_change)) + 
+  geom_boxplot(fill = NA) + 
+  geom_jitter(aes(colour = Appearances_cat), height = 0, show.legend = FALSE) + 
+  geom_text(data = . %>% filter(rank_change >= 5),aes(x = 1, y = rank_change, label = winner, colour = Appearances_cat), position = position_jitterdodge(jitter.height = 0.5, jitter.width = 2), show.legend = FALSE, size = 1.8)  +
+  scale_y_continuous(name = "Change in Rank") + 
+  scale_x_discrete(name = "") +
+  labs(title = "Distribution of Rank Change", subtitle = "Most Improved Panelist's \nName Included")
+    ,
+  Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
+  mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  arrange(Winning_rate) %>%
+  mutate(rank_SR = (1:dim(.)[1])) %>%
+  arrange(final_score) %>%
+  mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+  mutate(rank_change = rank_adjustedSR-rank_SR) %>% 
+  ggplot(aes(x  = rank_change)) + 
+  geom_histogram(aes(fill = Appearances_cat), show.legend = FALSE) + 
+  scale_x_continuous(name = "Change in Rank")
+    ,
+    ncol = 1, nrow = 2
+  )
+  ,
+  ncol = 2, nrow = 1, widths = c(0.6,0.4)
+)
+  
+
+```
+
+So the most common change in rank is 'no change'. The two biggest jumps are Kate Langbrook (3 wins, 21 appearances) and Neroli Meadows (2 wins, 5 appearances). 
+
+Kate beat Ed Kavalee (SR = 35%, thrice), Lawrence Mooney (SR = 43%), Arj Barker (no wins), Peter Helliar (SR = 44%), Michala Banas (SR = 83%), Dave Hughes (SR = 18%), Sam Pang (SR = 6%, twice), Jane Kennedy (SR = 15%), and Josh Lawson (no wins). Her jump likely comes mainly from beating Michala. 
+
+Neroli beat Ed Kavalee (SR = 35%, twice), Glenn Robbins (SR = 19%), Akmal Saleh (no wins), Sam Pang (SR = 6%, twice), Amanda Keller (SR = 93%), and Marty Sheargold (SR = 29%). Beating Amanda Keller would contribute a lot to Neroli's jump. 
+
+Harry Shearer may be the highest rank in both scoring methods, but he has only been a panelist once. Without playing multiple times, we don't know if he will be a consistently high scorer. Amanda Keller is a high ranker after 15 appearances.
+
+
+# A Finer Detail
+
+Of course, a more effective comparison might be achieved if we looked at the score the panelists achieve each episode. However, I couldn't find an easy way to get that information. In fact, what would be a great resource is the individual score of each panelist per episode, broken down general round questions, guest quizmaster questions, and mini games. It be fun to see who is the best at "Going, Going, Gone", "Trash or Treasure", and "Identify These International Versions of Well Known Reality TV Formats"
+
+# Those Who Never Win
+
+We shouldn't forget to mention all the panelists who have never won a show. 
+
+```{r, echo=FALSE}
+Performance %>% filter(is.na(Wins)) %>% 
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  arrange(Appearances,Contestant_Name) %>%
+  mutate(order = 1:n()) %>%
+  ggplot(aes(x=order,y=order, size = Appearances, colour = Appearances_cat, label = Contestant_Name)) + 
+    geom_text(position = position_jitterdodge(jitter.height = 2, jitter.width = 2, dodge.width = 0.4)) + 
+    labs(colour = "Appearances") + 
+    scale_y_continuous(name = "", breaks = NULL) + 
+    scale_x_continuous(name = "", breaks = NULL, expand = c(0,2)) +
+  scale_size(range = c(2,4)) + 
+  guides(size = FALSE)
+
+
+
+  
+
+
+
+```
+
+So Tony Martin, Denise Scott, and Hayley Sproull each have a number of appearances but no wins as of yet. Hopefully in the future the pay a bit more attention to the happenings of the week. 
+
+
+# A Conclusion
+
+So what can we conclude from all of this; who is the best and who is the worst? I think we can conclude that Mick Molloy is the most unlikely winner with the lowest strike rate, Tony Martin is the poorest performing panelist with no wins from 18 appearances, and Amanda Keller appears to be the best performing panelist with a strike rate (and adjusted strike rate) second only to one time panelist Harry Shearer. Of course as we have seen, Strike Rates can change rapidly. Ideally we would want that finer level of data to really tease out which panelist has been paying the most attention. And in the end, I think we are the winners because we get to watch the show. 
+
+
+
