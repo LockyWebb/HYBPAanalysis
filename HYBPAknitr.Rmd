@@ -1,7 +1,7 @@
 ---
 title: "HYBPA? Analysis"
 author: "Lachlan Webb"
-date: "03/05/2022"
+date: "17/05/2022"
 output: html_document
 ---
 
@@ -402,11 +402,6 @@ Neroli beat Ed Kavalee (SR = 35%, twice), Glenn Robbins (SR = 19%), Akmal Saleh 
 
 Harry Shearer may be the highest rank in both scoring methods, but he has only been a panelist once. Without playing multiple times, we don't know if he will be a consistently high scorer. Amanda Keller is a high ranker after 15 appearances.
 
-
-# A Finer Detail
-
-Of course, a more effective comparison might be achieved if we looked at the score the panelists achieve each episode. However, I couldn't find an easy way to get that information. In fact, what would be a great resource is the individual score of each panelist per episode, broken down general round questions, guest quizmaster questions, and mini games. It be fun to see who is the best at "Going, Going, Gone", "Trash or Treasure", and "Identify These International Versions of Well Known Reality TV Formats"
-
 # Those Who Never Win
 
 We shouldn't forget to mention all the panelists who have never won a show. 
@@ -426,16 +421,154 @@ Performance %>% filter(is.na(Wins)) %>%
     scale_x_continuous(name = "", breaks = NULL, expand = c(0,2)) +
   scale_size(range = c(2,4)) + 
   guides(size = FALSE)
+```
+
+So Tony Martin, Denise Scott, and Hayley Sproull each have a number of appearances but no wins as of yet. Hopefully in the future the pay a bit more attention to the happenings of the week. 
 
 
+# Multiplayer Elo Rating
 
+Perhaps we need a different approach entirely, that can give a ranking to panelists who don't win.
+
+Using the methodology outlined in https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802 , we can calculate multiplayer Elo ratings . Elo ratings have traditionally been used in 1 vs 1 games like chess and team vs team games like football leagues. But we can extend it to multiplayer games. This is useful as it means we can also rank players who never win. For our calculations, every player starts with a rating of 1000, whihc changes each time they appear (increase for win and decrease for loss).
+
+```{r Elo rating, echo=FALSE, warning=FALSE, message=FALSE, comment="", results=FALSE}
+
+# initial Elo of 1000
+Elo_df <- Performance %>% mutate(Elo = 1000)
+
+D <- 400
+K <- 32
+
+#S_func_lin <- seq(0.4,0,-0.1)
+# only have winner
+#S_func_lin <- c()
+
+N <- 5
+den <- N*(N-1)/2 
+
+Elo_df_time <- Elo_df %>% select(Contestant_Name, Elo) %>% mutate(episode = 0)
+
+#for(ep in 1:68){
+for(ep in 1:max(hybpa$`No. overall`)){
   
+  panelists <- str_trim(unlist(strsplit(hybpa$guests[hybpa$`No. overall` == ep], ",")))
+  
+  S_func <- rep(0,5)
+  S_func[grep(hybpa$winner[hybpa$`No. overall` == ep], panelists)] <- 1
+    
+  Expected_Score <- rep(NA,5)
+  # expected score for each panelist
+  for(pan in panelists){
+    Expected_Score[grep(pan,panelists)] <- 0
+    other_panelists <- panelists[!(panelists %in% pan)]
+    for (othpan in other_panelists) {
+      Expected_Score[grep(pan,panelists)] <- Expected_Score[grep(pan,panelists)] + 1/(1+10^((Elo_df$Elo[Elo_df$Contestant_Name == othpan]-Elo_df$Elo[Elo_df$Contestant_Name == pan])/D))
+    }
+    Expected_Score[grep(pan,panelists)] <- Expected_Score[grep(pan,panelists)]/den
+  }
+  
+  # Update Elo rating
+  for(pan in panelists){
+    Elo_df$Elo[Elo_df$Contestant_Name == pan] <- Elo_df$Elo[Elo_df$Contestant_Name == pan] + K*(N-1)*(S_func[grep(pan,panelists)] - Expected_Score[grep(pan,panelists)])
+  }
+  
+  # update Elo for each episode
+  Elo_df_time <- rbind(Elo_df_time, Elo_df_time <- Elo_df %>% select(Contestant_Name, Elo) %>% mutate(episode = ep))
+  
+}
+
+## Elo rank
+Elo_rank <- Elo_df %>% arrange(-Elo) %>% mutate(Rank = 1:n())
+
+
+## plot evolution of Elo
+
+#Elo_df_time %>% ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line()
+
+
+## Split by Performance
+Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+  filter(is.na(Wins)) %>% 
+  ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "No Win")
+
+
+print(ggarrange(
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "1") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1 Win")
+  ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "2-3") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "2-3 Wins")
+  ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "4-6") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "4-6 Wins")
+  ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "7-10") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "7-10 Wins")
+  ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "11-15") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "11-15 Wins")
+  ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+    filter(`Total Wins` == "70+") %>% 
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "70+ Wins")
+  ,
+  ncol = 2
+)) 
+
+```
+
+And how do the different ranking methodss at the end of 2021 season compare?
+
+```{r}
+Scoring_v2 %>% 
+  arrange(Winning_rate) %>%
+  mutate(rank_SR = (1:dim(.)[1])) %>%
+  arrange(final_score) %>%
+  mutate(rank_adjustedSR = (1:dim(.)[1])) %>%
+  merge(Elo_rank, by.x = c("winner","Appearances","Wins","Winning_rate"), by.y = c("Contestant_Name","Appearances","Wins","Winning_rate"), all = TRUE) %>%
+  mutate(rank_elo = max(Rank) - Rank + 1) %>% select(-Rank) %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  pivot_longer(cols = c(rank_adjustedSR, rank_SR, rank_elo), names_to = "Rank_Type", values_to = "Rank") %>%
+  mutate(Rank_Type = recode_factor(Rank_Type, rank_SR = "Strike Rate", rank_adjustedSR = "Adjusted Strike Rate", rank_elo = "Elo Rating")) %>%
+    ggplot(aes(x = Rank_Type, y = Rank, group = winner, colour = Appearances_cat)) + 
+  geom_point() + 
+  geom_line() + 
+  #geom_text(aes(label = winner), show.legend = FALSE) + 
+  geom_text(data = . %>% filter(Rank_Type == "Strike Rate"),aes(label = winner), nudge_x = -0.3, show.legend = FALSE, size = 1.8) +
+  geom_text(data = . %>% filter(Rank_Type == "Elo Rating"),aes(label = winner), nudge_x = 0.3, show.legend = FALSE, size = 1.8) +
+  scale_y_continuous(name = "Rank", breaks = NULL) + 
+  scale_x_discrete(name = "Scoring Mathod") + 
+  labs(colour = "Appearances", title = "Rank via different methods")
+
 
 
 
 ```
 
-So Tony Martin, Denise Scott, and Hayley Sproull each have a number of appearances but no wins as of yet. Hopefully in the future the pay a bit more attention to the happenings of the week. 
+Our 'cost' function for the Elo rating system was 1 for a win, and 0 for a loss, regardless of place. if we had the individual scores, we could perhaps provide a fairer costs function to those how narrowly lose as opposed to those who lose by a lot. 
+
+We can see from the different ranking methods, that panelists who appear a lot but don't win a lot (i.e. Sam Pang, Kitty Flanagan) have a lower Elo rating than panelists who have never won but who have only appeared a few times. 
+
+Amanda Keller has the top ranking with Elo ratings, with Harry Shear dropping down the ranks. 
+
+# A Finer Detail
+
+Of course, a more effective comparison might be achieved if we looked at the score the panelists achieve each episode. However, I couldn't find an easy way to get that information. In fact, what would be a great resource is the individual score of each panelist per episode, broken down general round questions, guest quizmaster questions, and mini games. It be fun to see who is the best at "Going, Going, Gone", "Trash or Treasure", and "Identify These International Versions of Well Known Reality TV Formats". Plus, seeing if there are benefits to going first or last in a minigame (when panelists make their decision more on how many Trash or Treasures have already been then deciding based on the footage) would be facsinating. 
 
 
 # A Conclusion
