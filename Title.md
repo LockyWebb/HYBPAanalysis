@@ -1,7 +1,7 @@
 HYBPA? Analysis
 ================
 Lachlan Webb
-03/05/2022
+24/05/2022
 
 ## HYBPA
 
@@ -125,17 +125,6 @@ has only been a panelist once. Without playing multiple times, we don’t
 know if he will be a consistently high scorer. Amanda Keller is a high
 ranker after 15 appearances.
 
-# A Finer Detail
-
-Of course, a more effective comparison might be achieved if we looked at
-the score the panelists achieve each episode. However, I couldn’t find
-an easy way to get that information. In fact, what would be a great
-resource is the individual score of each panelist per episode, broken
-down general round questions, guest quizmaster questions, and mini
-games. It be fun to see who is the best at “Going, Going, Gone”, “Trash
-or Treasure”, and “Identify These International Versions of Well Known
-Reality TV Formats”
-
 # Those Who Never Win
 
 We shouldn’t forget to mention all the panelists who have never won a
@@ -146,6 +135,59 @@ show.
 So Tony Martin, Denise Scott, and Hayley Sproull each have a number of
 appearances but no wins as of yet. Hopefully in the future the pay a bit
 more attention to the happenings of the week.
+
+# Multiplayer Elo Rating
+
+Perhaps we need a different approach entirely, that way we can give a
+ranking to panelists who don’t win. Why would we want to give a
+score/rank to someone who has never won? Who is a better performing
+panelist between Sarah Pascoe, who has been on the show once and lost,
+and Tim Mcdonald, who has been on the show 12 times but only won once?
+It isn’t a straightforward comparison, but we could argue that Sarah
+shouldn’t be ranked lower than Tim, a he’s had 11 losses to Sarah’s one.
+
+Using the methodology outlined in
+<https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802>
+, we can calculate multiplayer Elo ratings . Elo ratings have
+traditionally been used in 1 vs 1 games like chess and team vs team
+games like football leagues. But we can extend it to multiplayer games.
+This is useful as it means we can also rank players who never win. For
+our calculations, every player starts with a rating of 1000, which
+changes each time they appear (increase for win and decrease for loss).
+
+![](Title_files/figure-gfm/Elo%20rating-1.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-2.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-3.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-4.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-5.png)<!-- -->
+
+And how do the different ranking methods at the end of 2021 season
+compare?
+
+![](Title_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Our ‘cost’ function for the Elo rating system was 1 for a win, and 0 for
+a loss, regardless of place. If we had the individual scores, we could
+perhaps provide a fairer cost function to those who narrowly lose as
+opposed to those who lose by a lot.
+
+We can see from the different ranking methods, that panelists who appear
+a lot but don’t win a lot (i.e. Sam Pang, Kitty Flanagan) have a lower
+Elo rating than panelists who have never won but who have only appeared
+a few times (i.e. Joel Creasey and Sarah Pascoe).
+
+Amanda Keller has the top ranking with Elo ratings, with Harry Shear
+dropping down the ranks.
+
+# A Finer Detail
+
+Of course, a more effective comparison might be achieved if we looked at
+the score the panelists achieve each episode. However, I couldn’t find
+an easy way to get that information. In fact, what would be a great
+resource is the individual score of each panelist per episode, broken
+down general round questions, guest quizmaster questions, and mini
+games. It be fun to see who is the best at “Going, Going, Gone”, “Trash
+or Treasure”, and “Identify These International Versions of Well Known
+Reality TV Formats”. Plus, seeing if there are benefits to going first
+or last in a minigame (when panelists make their decision more on how
+many Trash or Treasures have already been then deciding based on the
+footage) would be fascinating.
 
 # A Conclusion
 

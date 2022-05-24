@@ -1,7 +1,7 @@
 ---
 title: "HYBPA? Analysis"
 author: "Lachlan Webb"
-date: "17/05/2022"
+date: "24/05/2022"
 output: html_document
 ---
 
@@ -490,48 +490,104 @@ Elo_rank <- Elo_df %>% arrange(-Elo) %>% mutate(Rank = 1:n())
 ## Split by Performance
 Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
   filter(is.na(Wins)) %>% 
-  ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "No Win")
+  ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "No Win", colour = "Contestant", subtitle = "Ratings that have only decreased")
+Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "1-5") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1-5 Appearances", colour = "Contestant")
 
-
+# print(ggarrange(
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "1") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1 Win")
+#   ,
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "2-3") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "2-3 Wins")
+#   ,
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "4-6") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "4-6 Wins")
+#   ,
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "7-10") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "7-10 Wins")
+#   ,
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "11-15") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "11-15 Wins")
+#   ,
+#   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
+#       mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
+#     filter(`Total Wins` == "70+") %>% 
+#     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "70+ Wins")
+#   ,
+#   ncol = 2
+# )) 
 print(ggarrange(
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "1") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1 Win")
+  # Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+  #   mutate(Appearances_cat = cut(Appearances, 
+  #                              breaks = c(0,5,10,20,40,60,100,250), 
+  #                              right = TRUE, 
+  #                              labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+  #   filter(Appearances_cat == "1-5") %>%
+  #   ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1-5 Appearances")
+  # ,
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "6-10") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "6-10 Appearances", colour = "Contestant")
   ,
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "2-3") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "2-3 Wins")
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "11-20") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "11-20 Appearances", colour = "Contestant")
   ,
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "4-6") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "4-6 Wins")
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "21-40") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "21-40 Appearances", colour = "Contestant")
   ,
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "7-10") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "7-10 Wins")
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "41-60") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "41-60 Appearances", colour = "Contestant")
   ,
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "11-15") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "11-15 Wins")
-  ,
-  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>% 
-      mutate(`Total Wins` = factor(cut(Wins, breaks = c(0,1,3,6,10,15,70,1000), labels = c("1","2-3","4-6","7-10","11-15","16-70","70+")))) %>% 
-    filter(`Total Wins` == "70+") %>% 
-    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "70+ Wins")
+  Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
+    mutate(Appearances_cat = cut(Appearances, 
+                               breaks = c(0,5,10,20,40,60,100,250), 
+                               right = TRUE, 
+                               labels = c("1-5","6-10","11-20","21-40","41-60","61-100","101-250"))) %>% 
+    filter(Appearances_cat == "101-250") %>%
+    ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "100+ Appearances", colour = "Contestant")
   ,
   ncol = 2
-)) 
-
+))
 ```
 
-And how do the different ranking methodss at the end of 2021 season compare?
+And how do the different ranking methods at the end of 2021 season compare?
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, comment="", results=FALSE}
 Scoring_v2 %>% 
   arrange(Winning_rate) %>%
   mutate(rank_SR = (1:dim(.)[1])) %>%
