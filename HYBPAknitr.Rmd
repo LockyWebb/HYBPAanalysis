@@ -1,7 +1,7 @@
 ---
 title: "HYBPA? Analysis"
 author: "Lachlan Webb"
-date: "02/12/2023"
+date: "24/09/2025"
 output: html_document
 ---
 
@@ -20,11 +20,12 @@ library(tibble)
 theme_set(theme_bw())
 
 #setwd("C:/Users/Lachlan/Documents/HYBPA/")
-setwd("C:/Users/locky/OneDrive/Documents/HYBPA/")
-hybpa <- read_excel("data_from_wikipedia.xlsx", sheet = 1)
-hybpa %<>% drop_na()
-setwd("C:/Users/locky/OneDrive/Documents/HYBPA_github_clone/HYBPAanalysis/")
-write.csv(hybpa, "HYBPA_wiki_data.csv", row.names = FALSE)
+setwd("~/HYBPA")
+# hybpa <- read_excel("data_from_wikipedia.xlsx", sheet = 1)
+# hybpa %<>% drop_na()
+# setwd("C:/Users/locky/OneDrive/Documents/HYBPA_github_clone/HYBPAanalysis/")
+# write.csv(hybpa, "HYBPA_wiki_data.csv", row.names = FALSE)
+hybpa <- readRDS("HYBPA_wiki_data.RDS")
 
 # Winners
 Winners <- hybpa %>% group_by(winner) %>% summarise(Wins = n())
@@ -147,15 +148,15 @@ So firstly, how often have the panelists appeared?
 
 ```{r, echo=FALSE}
 Performance %>% mutate(Appearances_cat = cut(Appearances, 
-                                             breaks = c(0,5,15,30,60,100,300), 
+                                             breaks = c(0,5,15,30,60,100,400), 
                                              right = TRUE, 
-                                             labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                                             labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   ggplot(aes(x = reorder(Contestant_Name, - Appearances), y = Appearances, fill = Appearances_cat)) + 
   geom_bar(stat = "identity") + 
   scale_y_continuous(expand = c(0,0)) + 
   labs(fill = "Appearances", x = "Panelist") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 6)) +
-  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff"))
 ```
 
@@ -273,16 +274,16 @@ For example, Maelanie Bracewell has won twice and has a Strike Rate of 6.9% (due
 
 Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
   mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   ggplot(aes(x = reorder(winner, -final_score), y = final_score, fill = Appearances_cat)) +
   geom_bar(stat = "identity") + 
   scale_y_continuous(name = "Adjusted Strike Rate", expand = c(0,0)) + 
   scale_x_discrete(name = "Winning Panelist") + 
   labs(fill = "Appearances") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff"))
 
 
@@ -341,9 +342,9 @@ Let's look at all the changes in position (rank)
 ggarrange(
   Scoring_v2 %>% 
   mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   arrange(Winning_rate) %>%
   mutate(rank_SR = (1:dim(.)[1])) %>%
   arrange(final_score) %>%
@@ -358,16 +359,16 @@ ggarrange(
   geom_text(data = . %>% filter(Rank_Type == "Adjusted Strike Rate"),aes(label = winner), nudge_x = 0.3, show.legend = FALSE, size = 1.8) +
   scale_y_continuous(name = "Rank", breaks = NULL) + 
   scale_x_discrete(name = "Scoring Mathod")  +
-  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff")) + 
   labs(colour = "Appearances", title = "Change of Rank")
   ,
   ggarrange(
     Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
   mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   arrange(Winning_rate) %>%
   mutate(rank_SR = (1:dim(.)[1])) %>%
   arrange(final_score) %>%
@@ -379,15 +380,15 @@ ggarrange(
   geom_text(data = . %>% filter(rank_change >= 5),aes(x = 1, y = rank_change, label = winner, colour = Appearances_cat), position = position_jitterdodge(jitter.height = 0.5, jitter.width = 2), show.legend = FALSE, size = 1.8)  +
   scale_y_continuous(name = "Change in Rank") + 
   scale_x_discrete(name = "") +
-  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff")) +
   labs(title = "Distribution of Rank Change", subtitle = "Most Improved Panelist's \nName Included")
     ,
   Scoring_v2 %>% #merge(Performance, by.x = "winner", by.y = "Contestant_Name") %>% 
   mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   arrange(Winning_rate) %>%
   mutate(rank_SR = (1:dim(.)[1])) %>%
   arrange(final_score) %>%
@@ -396,7 +397,7 @@ ggarrange(
   ggplot(aes(x  = rank_change)) + 
   geom_histogram(aes(fill = Appearances_cat), show.legend = FALSE) + 
   scale_x_continuous(name = "Change in Rank") +
-  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_fill_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff"))
 
     ,
@@ -424,9 +425,9 @@ We shouldn't forget to mention all the panelists who have never won a show.
 ```{r, echo=FALSE}
 Performance %>% filter(is.na(Wins)) %>% 
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   arrange(Appearances,Contestant_Name) %>%
   mutate(order = 1:n()) %>%
   ggplot(aes(x=order,y=order, size = Appearances, colour = Appearances_cat, label = Contestant_Name)) + 
@@ -508,9 +509,9 @@ Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
   ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "No Win", colour = "Contestant", subtitle = "Ratings that have only decreased")
 Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
     filter(Appearances_cat == "1-5") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "1-5 Appearances", colour = "Contestant")
 
@@ -549,9 +550,9 @@ Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
 # )) 
   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
     filter(Appearances_cat == "6-15") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "6-15 Appearances", colour = "Contestant")
 
@@ -566,34 +567,34 @@ print(ggarrange(
   # ,
   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
     filter(Appearances_cat == "16-30") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "16-30 Appearances", colour = "Contestant")
   ,
   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
     filter(Appearances_cat == "31-60") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "31-60 Appearances", colour = "Contestant")
   ,
   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
     filter(Appearances_cat == "61-100") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "61-100 Appearances", colour = "Contestant")
   ,
   Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
-    filter(Appearances_cat == "101-300") %>%
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
+    filter(Appearances_cat == "101-400") %>%
     ggplot(aes(x = episode, y = Elo, group = Contestant_Name, colour = Contestant_Name)) + geom_line() + labs(title = "100+ Appearances", colour = "Contestant")
   ,
   ncol = 2
@@ -603,9 +604,9 @@ print(ggarrange(
 
 Elo_df_time %>% merge(Performance, by = "Contestant_Name") %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   group_by(Contestant_Name) %>%
   slice_max(episode) %>%    
   ggplot(aes(x = Appearances, y = Elo, colour = Appearances_cat)) + 
@@ -631,9 +632,9 @@ Scoring_v2 %>%
   merge(Elo_rank, by.x = c("winner","Appearances","Wins","Winning_rate"), by.y = c("Contestant_Name","Appearances","Wins","Winning_rate"), all = TRUE) %>%
   mutate(rank_elo = max(Rank) - Rank + 1) %>% select(-Rank) %>%
     mutate(Appearances_cat = cut(Appearances, 
-                               breaks = c(0,5,15,30,60,100,300), 
+                               breaks = c(0,5,15,30,60,100,400), 
                                right = TRUE, 
-                               labels = c("1-5","6-15","16-30","31-60","61-100","101-300"))) %>% 
+                               labels = c("1-5","6-15","16-30","31-60","61-100","101-400"))) %>% 
   pivot_longer(cols = c(rank_adjustedSR, rank_SR, rank_elo), names_to = "Rank_Type", values_to = "Rank") %>%
   mutate(Rank_Type = recode_factor(Rank_Type, rank_SR = "Strike Rate", rank_adjustedSR = "Adjusted Strike Rate", rank_elo = "Elo Rating")) %>%
     ggplot(aes(x = Rank_Type, y = Rank, group = winner, colour = Appearances_cat)) + 
@@ -644,7 +645,7 @@ Scoring_v2 %>%
   geom_text(data = . %>% filter(Rank_Type == "Elo Rating"),aes(label = winner), nudge_x = 0.3, show.legend = FALSE, size = 1.8) +
   scale_y_continuous(name = "Rank", breaks = NULL) + 
   scale_x_discrete(name = "Scoring Mathod") +
-  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-300"), 
+  scale_colour_manual(breaks = c("1-5","6-15","16-30","31-60","61-100","101-400"), 
                       values = c("#01226fff","#024bacff","#0476eeff","#2987fcff","#48c7fcff","#fde611ff")) + 
   labs(colour = "Appearances", title = "Rank via different methods")
 

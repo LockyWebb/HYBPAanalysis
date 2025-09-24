@@ -1,7 +1,7 @@
 HYBPA? Analysis
 ================
 Lachlan Webb
-24/05/2022
+24/09/2025
 
 ## HYBPA
 
@@ -90,7 +90,7 @@ four) and divide that by 29. The panelists Melanie beat were Ed Kavalee
 (35%, twice), Ash London (50%), Marty Sheargold (29%), Sam Pang (5.8%,
 twice), Tim McDonald (8.3%), and Kitty Flanagan (5.7%). So Melanie’s
 Adjusted Strike Rate
-\(= (0.35 \times 2 + 0.5 + 0.29 + 0.058 \times 2 + 0.083 + 0.057)/2 \approx 0.015\)
+$= (0.35 \times 2 + 0.5 + 0.29 + 0.058 \times 2 + 0.083 + 0.057)/2 \approx 0.015$
 
 ![](Title_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
@@ -129,6 +129,12 @@ ranker after 15 appearances.
 
 We shouldn’t forget to mention all the panelists who have never won a
 show.
+
+    ## Warning: The `<scale>` argument of `guides()` cannot be `FALSE`. Use "none" instead as
+    ## of ggplot2 3.3.4.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
 
 ![](Title_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
