@@ -64,7 +64,7 @@ panelists’ Strike Rate can only be 0 or 1 after one appearance, and with
 more appearances we can get a more accurate of idea of how often they
 win.
 
-![](Title_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+![](Title_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
 
 We can see that Ed has been sitting pretty consistently around 30-35%
 for a while. Amanda has been doing nothing but increase her Strike Rate
@@ -83,13 +83,13 @@ Rates of the panelists they beat divided by their number of appearances.
 That way, if a panelist beats opposing panelists who have high Strike
 Rates, that win will contribute more to the Aggregated Strike Rate.
 
-For example, Maelanie Bracewell has won twice and has a Strike Rate of
-6.9% (due to her 29 appearances). In the Adjusted Strike Rate, instead
-of 2/29, we add up the Strike Rate of the eight panelists (two lots of
-four) and divide that by 29. The panelists Melanie beat were Ed Kavalee
-(35%, twice), Ash London (50%), Marty Sheargold (29%), Sam Pang (5.8%,
-twice), Tim McDonald (8.3%), and Kitty Flanagan (5.7%). So Melanie’s
-Adjusted Strike Rate
+For example, *at the end of 2022* Maelanie Bracewell has won twice and
+has a Strike Rate of 6.9% (due to her 29 appearances). In the Adjusted
+Strike Rate, instead of 2/29, we add up the Strike Rate of the eight
+panelists (two lots of four) and divide that by 29. The panelists
+Melanie beat were Ed Kavalee (35%, twice), Ash London (50%), Marty
+Sheargold (29%), Sam Pang (5.8%, twice), Tim McDonald (8.3%), and Kitty
+Flanagan (5.7%). So Melanie’s Adjusted Strike Rate
 $= (0.35 \times 2 + 0.5 + 0.29 + 0.058 \times 2 + 0.083 + 0.057)/2 \approx 0.015$
 
 ![](Title_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
@@ -129,12 +129,6 @@ ranker after 15 appearances.
 
 We shouldn’t forget to mention all the panelists who have never won a
 show.
-
-    ## Warning: The `<scale>` argument of `guides()` cannot be `FALSE`. Use "none" instead as
-    ## of ggplot2 3.3.4.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    ## generated.
 
 ![](Title_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
