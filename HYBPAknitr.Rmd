@@ -404,16 +404,34 @@ Performance %>% filter(is.na(Wins)) %>%
     scale_x_continuous(name = "", breaks = NULL, expand = c(0,2)) +
   scale_size(range = c(2,4)) + 
   guides(size = "none")
+
+Most_appear_no_win <- Performance %>% filter(is.na(Wins)) %>% 
+  arrange(Appearances,Contestant_Name) %>%
+  mutate(order = 1:n()) %>%
+  slice_max(order, n=3) %>% 
+  select(Contestant_Name, Appearances)
+
 ```
 
-So Tony Martin, Denise Scott, and Hayley Sproull each have a number of appearances but no wins as of yet. Hopefully in the future the pay a bit more attention to the happenings of the week. 
+So `r Most_appear_no_win$Contestant_Name[1]`, `r Most_appear_no_win$Contestant_Name[2]`, and `r Most_appear_no_win$Contestant_Name[3]` each have a number of appearances but no wins as of yet. Hopefully in the future the pay a bit more attention to the happenings of the week. 
 
 
 # Multiplayer Elo Rating
 
-Perhaps we need a different approach entirely, that way we can give a ranking to panelists who don't win. Why would we want to give a score/rank to someone who has never won? Who is a better performing panelist between Sarah Pascoe, who has been on the show once and lost, and Tim Mcdonald, who has been on the show 12 times but only won once? It isn't a straightforward comparison, but we could argue that Sarah shouldn't be ranked lower than Tim, a he's had 11 losses to Sarah's one. 
+```{r reason for elo, echo=FALSE, warning=FALSE, message=FALSE, comment="", results=FALSE}
 
-Using the methodology outlined in https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802 , we can calculate multiplayer Elo ratings . Elo ratings have traditionally been used in 1 vs 1 games like chess and team vs team games like football leagues. But we can extend it to multiplayer games. This is useful as it means we can also rank players who never win. For our calculations, every player starts with a rating of 1000, which changes each time they appear (increase for win and decrease for loss).
+# No wins, low number of appearances
+no_win_least_appear <- Performance %>% filter(is.na(Wins)) %>% slice_min(Appearances, n = 1) %>% select(Contestant_Name, Appearances)
+
+# one win, high number of appearances
+one_win_most_appear <- Performance %>% filter(Wins == 1) %>% slice_max(Appearances, n = 1) %>% select(Contestant_Name, Appearances)
+
+
+```
+
+Perhaps we need a different approach entirely, that way we can give a ranking to panelists who don't win. Why would we want to give a score/rank to someone who has never won? Who is a better performing panelist between `r no_win_least_appear$Contestant_Name[1]`, who has been on the show once and lost, and `r one_win_most_appear$Contestant_Name[1]`, who has been on the show `r one_win_most_appear$Appearances[1]` times but only won once? It isn't a straightforward comparison, but we could argue that `r str_split(no_win_least_appear$Contestant_Name[1], pattern = " ")[[1]][1]` shouldn't be ranked lower than `r str_split(one_win_most_appear$Contestant_Name[1], pattern = " ")[[1]][1]`, a they've had `r one_win_most_appear$Appearances[1]-1` losses to `r str_split(no_win_least_appear$Contestant_Name[1], pattern = " ")[[1]][1]`'s one. 
+
+Using the methodology outlined in https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802, we can calculate multiplayer Elo ratings. Elo ratings have traditionally been used in 1 vs 1 games like chess and team vs team games like football leagues. But we can extend it to multiplayer games. This is useful as it means we can also rank players who never win. For our calculations, every player starts with a rating of 1000, which changes each time they appear (increase for win and decrease for loss).
 
 ```{r Elo rating, echo=FALSE, warning=FALSE, message=FALSE, comment="", results=FALSE}
 
@@ -587,7 +605,7 @@ Scoring_v2 %>%
 
 Our 'cost' function for the Elo rating system was 1 for a win, and 0 for a loss, regardless of place. If we had the individual scores, we could perhaps provide a fairer cost function to those who narrowly lose as opposed to those who lose by a lot. 
 
-We can see from the different ranking methods, that panelists who appear a lot but don't win a lot (i.e. Sam Pang, Kitty Flanagan) have a lower Elo rating than panelists who have never won but who have only appeared a few times (i.e. Joel Creasey and Sarah Pascoe). 
+We can see from the different ranking methods, that panelists who appear a lot but don't win a lot (i.e. Kitty Flanagan and Celia Pacquola) have a lower Elo rating than panelists who have never won but who have only appeared a few times (i.e. Joel Creasey and Sarah Pascoe). 
 
 Amanda Keller has the top ranking with Elo ratings, with Harry Shear dropping down the ranks. 
 
@@ -598,7 +616,10 @@ Of course, a more effective comparison might be achieved if we looked at the sco
 
 # A Conclusion
 
-So what can we conclude from all of this; who is the best and who is the worst? I think we can conclude that Mick Molloy is the most unlikely winner with the lowest strike rate, but when looking at the Elo rating ranking, then Kitty Flanagan is the generally performs the worst (however her comedic performance is always great). Amanda Keller appears to be the best performing panelist, with a strike rate (and adjusted strike rate) second only to one time panelist Harry Shearer, and the highest Elo rating. Of course as we have seen, Strike Rates and Elo ratings can change rapidly. Ideally we would want that finer level of data from episode scores and minigame results  to really tease out which panelist has been paying the most attention. And in the end, I think we are the winners because we get to watch the show. 
+So what can we conclude from all of this; who is the best and who is the worst? I think we can conclude that Kitty Flanagan is the most unlikely winner with the lowest strike rate and Elo Rating, Tony Martin is the poorest performing panelist with no wins from 27 appearances, and Amanda Keller appears to be the best performing panelist with a strike rate (and adjusted strike rate) second only to one time panelist Harry Shearer. Of course as we have seen, Strike Rates and Elo Ratings can change rapidly. Ideally we would want that finer level of data to really tease out which panelist has been paying the most attention. And in the end, I think we are the winners because we get to watch the show. 
+
+
+*Results up to date as of 24/09/2025*
 
 
 

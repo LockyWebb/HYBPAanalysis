@@ -26,7 +26,7 @@ So firstly, how often have the panelists appeared?
 
 ![](Title_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
-Ed and Sam unsurprisingly have the most appearances, with Celia Pecquola
+Ed and Sam unsurprisingly have the most appearances, with Kitty Flanagan
 coming in a distant third.
 
 The next obvious question is, of those who have won, who has the most
@@ -49,13 +49,13 @@ take both of these things into account. Let’s define a panelist’s
 
 ![](Title_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-Ed isn’t the front runner anymore. Now we have Harry Shearer up the
-front with a perfect Strike Rate, closely followed by Amanda Keller at
-93% and Michala Banas at 83%. At the other end, with Strike Rates close
-to 0 we have Mick Malloy with a strike Rate of 2.5%, the hilarious Kitty
-Flanagen at 5.7%, and our favourite panelist who hates every segment Sam
-Peng with 5.8%. Ed has disappeared close to the middle with a Strike
-Rate of 35%.
+Ed isn’t the front runner anymore. Now we have Harry Shearer Harry
+Shearer up the front with 100%, a perfect Strike Rate. Closely followed
+by Amanda Keller at 88.9% and Michala Banas at 83.3%. At the other end,
+with Strike Rates close to 0 we have Kitty Flanagan with a strike Rate
+of 3.7%, the hilarious Denise Scott at 4.8%, and Hayley Sproull with
+5.6%. Ed has disappeared close to the middle with a Strike Rate of
+34.8%.
 
 ## How have panelists gone over time?
 
@@ -67,8 +67,8 @@ win.
 ![](Title_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->![](Title_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
 
 We can see that Ed has been sitting pretty consistently around 30-35%
-for a while. Amanda has been doing nothing but increase her Strike Rate
-for ages after a couple of early losses.
+for a while. Amanda has been mostly increasing her Strike Rate after a
+couple of early losses.
 
 ## Adjusted Strike Rate
 
@@ -83,47 +83,33 @@ Rates of the panelists they beat divided by their number of appearances.
 That way, if a panelist beats opposing panelists who have high Strike
 Rates, that win will contribute more to the Aggregated Strike Rate.
 
-For example, *at the end of 2022* Maelanie Bracewell has won twice and
-has a Strike Rate of 6.9% (due to her 29 appearances). In the Adjusted
-Strike Rate, instead of 2/29, we add up the Strike Rate of the eight
-panelists (two lots of four) and divide that by 29. The panelists
+For example, *at May 2022* Maelanie Bracewell had won twice and had a
+Strike Rate of 6.9% (due to her 29 appearances at the time). In the
+Adjusted Strike Rate, instead of 2/29, we add up the Strike Rate of the
+eight panelists (two lots of four) and divide that by 29. The panelists
 Melanie beat were Ed Kavalee (35%, twice), Ash London (50%), Marty
 Sheargold (29%), Sam Pang (5.8%, twice), Tim McDonald (8.3%), and Kitty
-Flanagan (5.7%). So Melanie’s Adjusted Strike Rate
+Flanagan (5.7%). So Melanie’s Adjusted Strike Rate in May 2022
 $= (0.35 \times 2 + 0.5 + 0.29 + 0.058 \times 2 + 0.083 + 0.057)/2 \approx 0.015$
 
 ![](Title_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Some things have changed, but some things haven’t. Harry Shearer still
 has the best Adjusted Strike Rate, with Amanda Keller not far behind.
-Michala Banas is now 4th, Neroli Meadows taking third. Mick Malloy is
-still bringing up the rear with Kitty Flanagan keeping him company,
-However Sam has jumped up a spot with Lehmo dropping a number of
-positions.
+Michala Banas is now 3rd, Neroli Meadows taking fourth. Denise scott is
+bringing up the rear with Kitty Flanagan keeping them company.
 
 Let’s look at all the changes in position (rank)
 
 ![](Title_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-So the most common change in rank is ‘no change’. The two biggest jumps
-are Kate Langbrook (3 wins, 21 appearances) and Neroli Meadows (2 wins,
-5 appearances).
+<!-- So the most common change in rank is 'no change'. The two biggest jumps are Kate Langbrook (3 wins, 21 appearances) and Neroli Meadows (2 wins, 5 appearances).  -->
 
-Kate beat Ed Kavalee (SR = 35%, thrice), Lawrence Mooney (SR = 43%), Arj
-Barker (no wins), Peter Helliar (SR = 44%), Michala Banas (SR = 83%),
-Dave Hughes (SR = 18%), Sam Pang (SR = 6%, twice), Jane Kennedy (SR =
-15%), and Josh Lawson (no wins). Her jump likely comes mainly from
-beating Michala.
+<!-- Kate beat Ed Kavalee (SR = 35%, thrice), Lawrence Mooney (SR = 43%), Arj Barker (no wins), Peter Helliar (SR = 44%), Michala Banas (SR = 83%), Dave Hughes (SR = 18%), Sam Pang (SR = 6%, twice), Jane Kennedy (SR = 15%), and Josh Lawson (no wins). Her jump likely comes mainly from beating Michala.  -->
 
-Neroli beat Ed Kavalee (SR = 35%, twice), Glenn Robbins (SR = 19%),
-Akmal Saleh (no wins), Sam Pang (SR = 6%, twice), Amanda Keller (SR =
-93%), and Marty Sheargold (SR = 29%). Beating Amanda Keller would
-contribute a lot to Neroli’s jump.
+<!-- Neroli beat Ed Kavalee (SR = 35%, twice), Glenn Robbins (SR = 19%), Akmal Saleh (no wins), Sam Pang (SR = 6%, twice), Amanda Keller (SR = 93%), and Marty Sheargold (SR = 29%). Beating Amanda Keller would contribute a lot to Neroli's jump.  -->
 
-Harry Shearer may be the highest rank in both scoring methods, but he
-has only been a panelist once. Without playing multiple times, we don’t
-know if he will be a consistently high scorer. Amanda Keller is a high
-ranker after 15 appearances.
+<!-- Harry Shearer may be the highest rank in both scoring methods, but he has only been a panelist once. Without playing multiple times, we don't know if he will be a consistently high scorer. Amanda Keller is a high ranker after 15 appearances. -->
 
 # Those Who Never Win
 
@@ -132,7 +118,7 @@ show.
 
 ![](Title_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-So Tony Martin, Denise Scott, and Hayley Sproull each have a number of
+So Tony Martin, Ray O’Leary, and Troy Kinne each have a number of
 appearances but no wins as of yet. Hopefully in the future the pay a bit
 more attention to the happenings of the week.
 
@@ -141,19 +127,20 @@ more attention to the happenings of the week.
 Perhaps we need a different approach entirely, that way we can give a
 ranking to panelists who don’t win. Why would we want to give a
 score/rank to someone who has never won? Who is a better performing
-panelist between Sarah Pascoe, who has been on the show once and lost,
-and Tim Mcdonald, who has been on the show 12 times but only won once?
-It isn’t a straightforward comparison, but we could argue that Sarah
-shouldn’t be ranked lower than Tim, a he’s had 11 losses to Sarah’s one.
+panelist between Aisling Bea, who has been on the show once and lost,
+and Denise Scott, who has been on the show 21 times but only won once?
+It isn’t a straightforward comparison, but we could argue that Aisling
+shouldn’t be ranked lower than Denise, a they’ve had 20 losses to
+Aisling’s one.
 
 Using the methodology outlined in
-<https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802>
-, we can calculate multiplayer Elo ratings . Elo ratings have
-traditionally been used in 1 vs 1 games like chess and team vs team
-games like football leagues. But we can extend it to multiplayer games.
-This is useful as it means we can also rank players who never win. For
-our calculations, every player starts with a rating of 1000, which
-changes each time they appear (increase for win and decrease for loss).
+<https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802>,
+we can calculate multiplayer Elo ratings. Elo ratings have traditionally
+been used in 1 vs 1 games like chess and team vs team games like
+football leagues. But we can extend it to multiplayer games. This is
+useful as it means we can also rank players who never win. For our
+calculations, every player starts with a rating of 1000, which changes
+each time they appear (increase for win and decrease for loss).
 
 ![](Title_files/figure-gfm/Elo%20rating-1.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-2.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-3.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-4.png)<!-- -->![](Title_files/figure-gfm/Elo%20rating-5.png)<!-- -->
 
@@ -168,9 +155,9 @@ perhaps provide a fairer cost function to those who narrowly lose as
 opposed to those who lose by a lot.
 
 We can see from the different ranking methods, that panelists who appear
-a lot but don’t win a lot (i.e. Sam Pang, Kitty Flanagan) have a lower
-Elo rating than panelists who have never won but who have only appeared
-a few times (i.e. Joel Creasey and Sarah Pascoe).
+a lot but don’t win a lot (i.e. Kitty Flanagan and Celia Pacquola) have
+a lower Elo rating than panelists who have never won but who have only
+appeared a few times (i.e. Joel Creasey and Sarah Pascoe).
 
 Amanda Keller has the top ranking with Elo ratings, with Harry Shear
 dropping down the ranks.
@@ -192,12 +179,14 @@ footage) would be fascinating.
 # A Conclusion
 
 So what can we conclude from all of this; who is the best and who is the
-worst? I think we can conclude that Mick Molloy is the most unlikely
-winner with the lowest strike rate, Tony Martin is the poorest
-performing panelist with no wins from 18 appearances, and Amanda Keller
-appears to be the best performing panelist with a strike rate (and
-adjusted strike rate) second only to one time panelist Harry Shearer. Of
-course as we have seen, Strike Rates can change rapidly. Ideally we
-would want that finer level of data to really tease out which panelist
-has been paying the most attention. And in the end, I think we are the
-winners because we get to watch the show.
+worst? I think we can conclude that Kitty Flanagan is the most unlikely
+winner with the lowest strike rate and Elo Rating, Tony Martin is the
+poorest performing panelist with no wins from 27 appearances, and Amanda
+Keller appears to be the best performing panelist with a strike rate
+(and adjusted strike rate) second only to one time panelist Harry
+Shearer. Of course as we have seen, Strike Rates and Elo Ratings can
+change rapidly. Ideally we would want that finer level of data to really
+tease out which panelist has been paying the most attention. And in the
+end, I think we are the winners because we get to watch the show.
+
+*Results up to date as of 24/09/2025*
